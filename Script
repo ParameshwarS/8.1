@@ -1,0 +1,24 @@
+A = load ‘/home/acadgild/Desktop/petrol-dataset.txt’ USING PigStorage(‘,’) AS (ID:chararray, name:chararray, buy:chararray, 
+    sell:chararray, in:int,out:int,year:int);
+
+B = group A by name;
+C = foreach B GENERATE group,SUM(a.out)
+
+C = foreach B GENERATE group,SUM(A.out) as sum;
+D = order C by sum DESC;
+E =limit D 10;
+
+B = group A (ID, year);
+C = foreach B GENERATE A.ID as id, A.year as year, SUM(A.in) as cons;
+D = order  C by cons DESC;
+E = foreach D GENERATE id,year;
+E = foreach D GENERATE flatten(id), flatten(year);
+F = limit E 10;
+
+B = group A by year;
+C = foreach B {
+temp = foreach A GENERATE in-out;
+generate A.name as name, A.year as year, sum(temp) as sale;};
+D = order C by sale DESC;
+E = foreach C generate flatten(name);
+F = limit E 1;
